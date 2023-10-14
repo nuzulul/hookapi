@@ -7,12 +7,21 @@ compatibility_date = "2023-10-10"
 # Docs: https://developers.cloudflare.com/workers/platform/environment-variables
 # [vars]
 # MY_VARIABLE = "production_value"
+[vars]
+TELEGRAM_CHATID_INFOPALESTINA = "@info_palestina"
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/runtime-apis/kv
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#kv_namespaces = [
+#  { binding = "DB", id = "d1a5b7f42f7141e2bdef7581f3cec6cf" }
+#]
+[[kv_namespaces]]
+binding = "DB"
+id = "d1a5b7f42f7141e2bdef7581f3cec6cf"
+
 
 # Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
 # Docs: https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
@@ -49,3 +58,17 @@ compatibility_date = "2023-10-10"
 # [[migrations]]
 # tag = "v1"
 # new_classes = ["MyDurableObject"]
+
+
+[env]
+
+  [env.dev]
+
+    kv_namespaces = [
+      { binding = "DB", id = "d1a5b7f42f7141e2bdef7581f3cec6cf" }
+    ]  
+    
+    [env.dev.vars]
+      TELEGRAM_CHATID_INFOPALESTINA = "@bsmi_tv"
+  
+    
