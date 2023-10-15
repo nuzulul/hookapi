@@ -411,8 +411,9 @@ const handleInfopalestina2 = async (request, env) => {
         data[i].response = response
       }
       else {
-        const response = await sendtelegram("text",title,"")
-        data[i].response = response
+        //const response = await sendtelegram("text",title,"")
+        //data[i].response = response
+        continue
       }      
       output = JSON.stringify(data[i], null, 2)
       break
