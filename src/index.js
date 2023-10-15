@@ -283,7 +283,6 @@ const handleInfopalestina = async (request, env) => {
     //console.log(data[i])
     if (data[i].id > lastcode) {
     //if (data[i].id == 8080) {
-      await env.DB.put("infopalestina",data[i].id)
       let title = data[i].title.replace("#SahabatPalestina_ID","")
       title = decodeEntities(title)
       //console.log(title)
@@ -300,6 +299,7 @@ const handleInfopalestina = async (request, env) => {
         data[i].response = response
       }      
       output = JSON.stringify(data[i], null, 2)
+      await env.DB.put("infopalestina",data[i].id)
       break
     }
   }
@@ -401,7 +401,7 @@ const handleInfopalestina2 = async (request, env) => {
     //console.log(data[i])
     if (data[i].id > lastcode) {
     //if (data[i].id == 8080) {
-      await env.DB.put("infopalestina2",data[i].id)
+      
       let title = data[i].title.replace("##########","")
       title = decodeEntities(title)
       //console.log(title)
@@ -419,6 +419,7 @@ const handleInfopalestina2 = async (request, env) => {
         continue
       }      
       output = JSON.stringify(data[i], null, 2)
+      await env.DB.put("infopalestina2",data[i].id)
       break
     }
   }
@@ -526,7 +527,7 @@ const handleInfopalestina3 = async (request, env) => {
     //console.log(data[i])
     if (data[i].id > lastcode) {
     //if (data[i].id == 8080) {
-      await env.DB.put("infopalestina3",data[i].id)
+      
       let title = data[i].title.replace("##########","")
       title = decodeEntities(title)
       // jika bukan photo atau video skip
@@ -549,6 +550,7 @@ const handleInfopalestina3 = async (request, env) => {
         //data[i].response = response
       }      
       output = JSON.stringify(data[i], null, 2)
+      await env.DB.put("infopalestina3",data[i].id)
       break
     }
   }
@@ -658,7 +660,7 @@ const handleInfopalestina4 = async (request, env) => {
     //console.log(data[i])
     if (data[i].id > lastcode) {
     //if (data[i].id == 48930) {
-      await env.DB.put("infopalestina4",data[i].id)
+      
       let title = data[i].title.replace("Breaking","")
       title = decodeEntities(title)
       let translateid = await translatetext("en","id",title)
@@ -682,6 +684,7 @@ const handleInfopalestina4 = async (request, env) => {
         } else {continue}
       }      
       output = JSON.stringify(data[i], null, 2)
+      await env.DB.put("infopalestina4",data[i].id)
       break
     }
   }
