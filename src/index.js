@@ -32,6 +32,7 @@ const handleGet = async (request, env, id) => {
       case "infopalestina": return await handleInfopalestina(request, env)
       case "infopalestina2": return await handleInfopalestina2(request, env)
       case "infopalestina3": return await handleInfopalestina3(request, env)
+      case "infopalestina4": return await handleInfopalestina4(request, env)
     }
   }
   else {
@@ -526,6 +527,8 @@ const handleInfopalestina3 = async (request, env) => {
       await env.DB.put("infopalestina3",data[i].id)
       let title = data[i].title.replace("##########","")
       title = decodeEntities(title)
+      // jika bukan photo atau video skip
+      if((!data[i].photo)&&(!data[i].video))continue
       let translateid = await translatetext("ar","id",title)
       if(translateid == "error") {continue}else{data[i].translate = translateid}
       if(data[i].photo) {
@@ -540,6 +543,139 @@ const handleInfopalestina3 = async (request, env) => {
         continue
         //const response = await sendtelegram("text",title,"")
         //data[i].response = response
+      }      
+      output = JSON.stringify(data[i], null, 2)
+      break
+    }
+  }
+  
+  //const res = json
+  const res = output
+  return new Response(res, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
+    }
+  });
+      
+}
+
+const handleInfopalestina4 = async (request, env) => {
+
+  addEventListener("fetch", event => {
+    event.respondWith(handleRequest(event.request))
+  });
+
+  async function handleRequest(request) {
+    var values = [];
+    const url = "https://t.me/s/daysofpal"
+    var response = await fetch(url);
+    function addToLast(attr, text) {
+      var lastIndex = values.length - 1;
+      if (lastIndex < 0) {
+        // this shouldn't happen, since there should always have been
+        // an object created by the parent [data-code] div
+        return;
+      }
+      // need to add them to the previous value, just in case if there
+      // are multiple text chunks
+      values[lastIndex][attr] = (values[lastIndex][attr] || '') + text;
+    }
+    await new HTMLRewriter()
+      .on(".tgme_widget_message_wrap", { 
+        element(element) { 
+          values.push({
+            container: element.getAttribute("class")
+          });
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message", {
+        element(element) {
+          addToLast('code', element.getAttribute("data-post"));
+          const code = element.getAttribute("data-post")
+          const arr = code.split("/")
+          const id = arr[1]
+          addToLast('id',id)
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_text", {
+        text(text) {
+          addToLast('title', text.text);
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_photo_wrap", {
+        element(element) {
+
+          const regex = /background-image:url\(["']?([^"']*)["']?\)/gm;
+          const str = element.getAttribute("style");
+          let m;
+
+          while ((m = regex.exec(str)) !== null) {
+              // This is necessary to avoid infinite loops with zero-width matches
+              if (m.index === regex.lastIndex) {
+                  regex.lastIndex++;
+              }
+              
+              // The result can be accessed through the `m`-variable.
+              m.forEach((match, groupIndex) => {
+                  //console.log(`Found match, group ${groupIndex}: ${match}`);
+                  if (groupIndex == 1) addToLast('photo', match);
+              });
+          }
+          
+          
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_video_player .tgme_widget_message_video_wrap video", {
+        element(element) {
+          addToLast('video', element.getAttribute("src"));
+        }
+      })
+      .transform(response).arrayBuffer();
+    
+    return values
+  }
+  
+  const data = await handleRequest(request)
+  const json = JSON.stringify(data, null, 2)
+  //await env.DB.put("infopalestina4",2)
+  let lastcode
+  try{
+    lastcode = await env.DB.get("infopalestina4")
+  } catch(e) {
+    await env.DB.put("infopalestina4",2)
+    lastcode = await env.DB.get("infopalestina4")
+  }
+  //console.log(lastcode)
+  let output = '{"status":"ok"}'
+  let breakingimg = "https://cdn5.telegram-cdn.org/file/qJmSigOp3-TNali5erzz77z_xx0AWw0Ps8o36JkHHKKYwgvixl5g801nzY8VqElgWpsJbFfqug9oNpcniGp-3MG3pGai9QH9a_Nk31nHqRoJDWig-7KcN6cF4X38h-VPdJRUx5hUoP7n2SI2qWV94Cp0NFanHqTOt8SXwkC_7XsgOT0ZDrj5qyaGw5PfQME_tCx6kVYWlsIVbgoT8rRPRVyeSmE1-XnEMoCOIieLJQw__bVYiMq3pEeSyprG9csuEGp_cAZxN1kWv_R7pa0u7COcEEIRbe1BM5O5ei2vLQ-ufY2EOJMXpG3rkkcgVzIVFnJlJRmOJewniSLg4yBTlg.jpg"
+  
+  for (let i = 0; i < data.length - 1;i++) {
+    //console.log(data[i])
+    if (data[i].id > lastcode) {
+    //if (data[i].id == 48930) {
+      await env.DB.put("infopalestina4",data[i].id)
+      let title = data[i].title.replace("Breaking","")
+      title = decodeEntities(title)
+      let translateid = await translatetext("en","id",title)
+      if(translateid == "error") {continue}else{data[i].translate = translateid}
+      if(data[i].photo) {
+        if (data[i].title.includes("Breaking")) {
+          translateid = "Breaking News "+translateid
+          const response = await sendtelegram("photo",translateid,breakingimg)
+          data[i].response = response
+        } else {continue}
+      }
+      else if(data[i].video) {
+        const response = await sendtelegram("video",translateid,data[i].video)
+        data[i].response = response
+      }
+      else {
+        if (data[i].title.includes("Breaking")) {
+          translateid = "Breaking News "+translateid
+          const response = await sendtelegram("photo",translateid,breakingimg)
+          data[i].response = response
+        } else {continue}
       }      
       output = JSON.stringify(data[i], null, 2)
       break
