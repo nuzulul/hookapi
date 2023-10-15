@@ -145,13 +145,15 @@ async function translatetext(sourceLanguage,targetLanguage,text) {
       }
       
       const apiUrl = `https://script.google.com/macros/s/AKfycbwsIFFPl5l_uyc9Whz2bOhsTnF-M02d_9HMqf12J5hvm5qKqVzn-pI9WbAwhZVh0yZd7g/exec`;
+      const API_TOKEN_NUZULZ_HOOKAPI = myenv.API_TOKEN_NUZULZ_HOOKAPI
       const params = {
         command: "translate",
         data: {
           sourceLanguage: sourceLanguage,
           targetLanguage: targetLanguage,
           text: text
-        }
+        },
+        apikey: API_TOKEN_NUZULZ_HOOKAPI
       };
 
       try {
@@ -530,6 +532,7 @@ const handleInfopalestina3 = async (request, env) => {
       // jika bukan photo atau video skip
       if((!data[i].photo)&&(!data[i].video))continue
       let translateid = await translatetext("ar","id",title)
+      if(translateid.startsWith("Mendesak"))translateid = translateid.replace("Mendesak","Terkini")
       if(translateid == "error") {continue}else{data[i].translate = translateid}
       if(data[i].photo) {
         const response = await sendtelegram("photo",translateid,data[i].photo)
