@@ -532,6 +532,7 @@ const handleInfopalestina3 = async (request, env) => {
       // jika bukan photo atau video skip
       if((!data[i].photo)&&(!data[i].video))continue
       let translateid = await translatetext("ar","id",title)
+      if(translateid.includes("Ibrani"))continue
       if(translateid.startsWith("Mendesak"))translateid = translateid.replace("Mendesak","Terkini")
       if(translateid == "error") {continue}else{data[i].translate = translateid}
       if(data[i].photo) {
