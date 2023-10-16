@@ -283,7 +283,8 @@ const handleInfopalestina = async (request, env) => {
     //console.log(data[i])
     if (data[i].id > lastcode) {
     //if (data[i].id == 8080) {
-      let title = data[i].title.replace("#SahabatPalestina_ID","")
+      let title = data[i].title || ""
+      title = title.replace("#SahabatPalestina_ID","")
       title = decodeEntities(title)
       //console.log(title)
       if(data[i].photo) {
@@ -402,7 +403,7 @@ const handleInfopalestina2 = async (request, env) => {
     if (data[i].id > lastcode) {
     //if (data[i].id == 8080) {
       
-      let title = data[i].title.replace("##########","")
+      let title = data[i].title || ""
       title = decodeEntities(title)
       //console.log(title)
       if(data[i].photo) {
@@ -528,14 +529,15 @@ const handleInfopalestina3 = async (request, env) => {
     if (data[i].id > lastcode) {
     //if (data[i].id == 8080) {
       
-      let title = data[i].title.replace("##########","")
+      let title = data[i].title || ""
+      title = title.replace("##########","")
       title = decodeEntities(title)
       // jika bukan photo atau video skip
       if((!data[i].photo)&&(!data[i].video))continue
       let translateid = await translatetext("ar","id",title)
-      if(translateid.includes("Ibrani"))continue
-      if(translateid.startsWith("Mendesak"))translateid = translateid.replace("Mendesak","Terkini")
       if(translateid == "error") {continue}else{data[i].translate = translateid}
+      if(translateid.includes("Ibrani"))continue
+      if(translateid.startsWith("Mendesak"))translateid = translateid.replace("Mendesak","Terkini")      
       if(data[i].photo) {
         const response = await sendtelegram("photo",translateid,data[i].photo)
         data[i].response = response
@@ -661,7 +663,8 @@ const handleInfopalestina4 = async (request, env) => {
     if (data[i].id > lastcode) {
     //if (data[i].id == 48930) {
       
-      let title = data[i].title.replace("Breaking","")
+      let title = data[i].title || ""
+      title = title.replace("Breaking","")
       title = decodeEntities(title)
       let translateid = await translatetext("en","id",title)
       if(translateid == "error") {continue}else{data[i].translate = translateid}
