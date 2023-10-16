@@ -33,6 +33,7 @@ const handleGet = async (request, env, id) => {
       case "infopalestina2": return await handleInfopalestina2(request, env)
       case "infopalestina3": return await handleInfopalestina3(request, env)
       case "infopalestina4": return await handleInfopalestina4(request, env)
+      default: return await handleDefault(request, env)
     }
   }
   else {
@@ -193,6 +194,10 @@ function decodeEntities(encodedString) {
         var num = parseInt(numStr, 10);
         return String.fromCharCode(num);
     });
+}
+
+const handleDefault = async (request, env) => {
+  return new Response("ok");
 }
 
 
