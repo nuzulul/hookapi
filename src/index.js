@@ -720,11 +720,9 @@ class Hookdb {
     const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
     const values = await stmt.first();
     if(values == null){
-      //console.log('insert')
       const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
       const values = await stmt.run();
     }else{
-      //console.log('update')
       const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
       const values = await stmt.run();
     }
@@ -769,7 +767,6 @@ const handleTesting = async (request, env) => {
   return new Response(res, {
     headers: {
       "content-type": "application/json;charset=UTF-8"
-      //"content-type": "text/html;charset=UTF-8"
     }
   });
 }
