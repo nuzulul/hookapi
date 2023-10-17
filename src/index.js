@@ -33,6 +33,7 @@ const handleGet = async (request, env, id) => {
       case "infopalestina2": return await handleInfopalestina2(request, env)
       case "infopalestina3": return await handleInfopalestina3(request, env)
       case "infopalestina4": return await handleInfopalestina4(request, env)
+      case "testing": return await handleTesting(request, env)
       default: return await handleDefault(request, env)
     }
   }
@@ -706,4 +707,67 @@ const handleInfopalestina4 = async (request, env) => {
     }
   });
       
+}
+
+class Hookdb {
+  constructor() {    
+    return this.init()
+  }
+  async init() {
+    return this
+  }
+  async put(key,value) {
+    console.log("ok")
+    const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
+    const values = await stmt.first();
+    if (values == null) {
+      const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
+      const values = await stmt.first();
+    }
+    return    
+  }
+  async get(key) {
+    const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
+    //const stmt = myenv.D1.prepare("SELECT name FROM sqlite_schema WHERE type ='table'")
+    const values = await stmt.first();
+    let output
+    if(values == null){
+      output = null
+    } else {
+      output = values.myvalue
+    }
+    return output
+  }
+}
+
+const handleTesting = async (request, env) => {
+
+  async function testingdb(){
+    let lastcode
+    try{
+      const hookdb = await new Hookdb()
+      lastcode = await hookdb.get("testing")
+      if (lastcode == null) {
+        await hookdb.put("testing",2)
+        lastcode = await hookdb.get("testing")
+      }
+    } catch(e) {}
+    return lastcode
+  }
+  
+  let testingdb1 = await testingdb()
+  
+  let output = {
+    status: "ok",
+    testingdb1: testingdb1
+  }
+  
+  let res = JSON.stringify(output)
+  
+  return new Response(res, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
+    }
+  });
 }

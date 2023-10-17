@@ -6,6 +6,12 @@ compatibility_date = "2023-10-10"
 [triggers]
 crons = []
 
+[[ d1_databases ]]
+binding = "D1" # available in your Worker on `env.DB`
+database_name = "hookapi-d1"
+database_id = "8cf9edd1-1ac4-4075-918b-29445e49be59"
+
+
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.
 # Docs: https://developers.cloudflare.com/workers/platform/environment-variables
@@ -71,6 +77,10 @@ id = "d1a5b7f42f7141e2bdef7581f3cec6cf"
     kv_namespaces = [
       { binding = "DB", id = "d1a5b7f42f7141e2bdef7581f3cec6cf" }
     ]  
+
+    d1_databases = [
+      { binding = "D1", database_name = "hookapi-d1", database_id = "8cf9edd1-1ac4-4075-918b-29445e49be59" }
+    ]
     
     [env.dev.vars]
       TELEGRAM_CHATID_INFOPALESTINA = "@bsmi_tv"
