@@ -667,7 +667,7 @@ const handleInfopalestina4 = async (request, env) => {
   for (let i = 0; i < data.length - 1;i++) {
     //console.log(data[i])
     if (data[i].id > lastcode) {
-    //if (data[i].id == 48930) {
+    //if (data[i].id == 49077) {
       
       let title = data[i].title || ""
       title = title.replace("Breaking","")
@@ -675,7 +675,8 @@ const handleInfopalestina4 = async (request, env) => {
       let translateid = await translatetext("en","id",title)
       if(translateid == "error") {continue}else{data[i].translate = translateid}
       if(data[i].photo) {
-        if (data[i].title.includes("Breaking")) {
+        let mytitle = data[i].title || ""
+        if (mytitle.includes("Breaking")) {
           translateid = "Breaking News "+translateid
           const response = await sendtelegram("photo",translateid,breakingimg)
           data[i].response = response
@@ -686,7 +687,8 @@ const handleInfopalestina4 = async (request, env) => {
         data[i].response = response
       }
       else {
-        if (data[i].title.includes("Breaking")) {
+        let mytitle = data[i].title || ""
+        if (mytitle.includes("Breaking")) {
           translateid = "Breaking News "+translateid
           const response = await sendtelegram("photo",translateid,breakingimg)
           data[i].response = response
@@ -718,15 +720,27 @@ class Hookdb {
   }
   async put(key,value) {
     const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
-    const values = await stmt.first();
+    const values = await stmt.first()
     if(values == null){
       const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
-      const values = await stmt.run();
+      const values = await stmt.run()
+      return values
     }else{
       const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
-      const values = await stmt.run();
+      const values = await stmt.run()
+      return values
     }
-    return
+    return values
+  }
+  async insert(key,value) {
+      const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
+      const values = await stmt.run()
+      return values
+  }
+  async update(key,value) {
+      const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
+      const values = await stmt.run()
+      return values
   }
   async get(key) {
     const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
