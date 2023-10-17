@@ -717,18 +717,21 @@ class Hookdb {
     return this
   }
   async put(key,value) {
-    console.log("ok")
-    const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
+    const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
     const values = await stmt.first();
-    if (values == null) {
+    if(values == null){
+      //console.log('insert')
       const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
-      const values = await stmt.first();
+      const values = await stmt.run();
+    }else{
+      //console.log('update')
+      const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
+      const values = await stmt.run();
     }
-    return    
+    return
   }
   async get(key) {
     const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
-    //const stmt = myenv.D1.prepare("SELECT name FROM sqlite_schema WHERE type ='table'")
     const values = await stmt.first();
     let output
     if(values == null){
@@ -753,8 +756,7 @@ const handleTesting = async (request, env) => {
       }
     } catch(e) {}
     return lastcode
-  }
-  
+  }  
   let testingdb1 = await testingdb()
   
   let output = {
