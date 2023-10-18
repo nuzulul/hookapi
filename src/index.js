@@ -293,6 +293,7 @@ const handleInfopalestina = async (request, env) => {
       title = title.replace("#SahabatPalestina_ID","")
       title = decodeEntities(title)
       //console.log(title)
+      if(title.includes('donasi'))continue
       if(data[i].photo) {
         const response = await sendtelegram("photo",title,data[i].photo)
         data[i].response = response
@@ -412,6 +413,7 @@ const handleInfopalestina2 = async (request, env) => {
       let title = data[i].title || ""
       title = decodeEntities(title)
       //console.log(title)
+      if(title.includes('donasi'))continue
       if(data[i].photo) {
         const response = await sendtelegram("photo",title,data[i].photo)
         data[i].response = response
