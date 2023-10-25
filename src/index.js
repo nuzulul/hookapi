@@ -597,6 +597,9 @@ const handleInfopalestina3 = async (request, env) => {
       // jika bukan photo atau video skip
       if((!data[i].photo)&&(!data[i].video))continue
       let translateid = await translatetext("ar","id",title)
+      translateid = translateid.replace("#Shehab","")
+      translateid = translateid.replace("Shehab","")
+      translateid = translateid.replace("Koresponden","")      
       if(translateid == "error") {continue}else{data[i].translate = translateid}
       if(translateid.includes("Ibrani"))continue
       if(translateid.startsWith("Mendesak"))translateid = translateid.replace("Mendesak","Terkini")      
@@ -878,6 +881,9 @@ const handleTxtfromgaza = async (request, env) => {
       
       let title = data[i].title || ""
       title = title.replace("##########","")
+      title = title.replace("#Shehab","")
+      title = title.replace("Shehab","")
+      title = title.replace("Koresponden","")
       title = decodeEntities(title)
       if(title.includes("Ibrani"))continue
       title = title+" #txtfromgaza #gaza #palestina #palestine"
