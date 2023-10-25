@@ -838,6 +838,11 @@ const handleTxtfromgaza = async (request, env) => {
           addToLast('video', element.getAttribute("src"));
         }
       })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_video_player .message_video_duration", {
+        text(text) {
+          addToLast('duration', text.text);
+        }
+      })
       .transform(response).arrayBuffer();
     
     return values
@@ -849,11 +854,9 @@ const handleTxtfromgaza = async (request, env) => {
   try{
     lastcode = await env.DB.get("txtfromgaza")
     lastcode = JSON.parse(lastcode)
-    console.log('lastcode1:'+lastcode)
     if(lastcode == null){
-      lastcode = [2]
+      lastcode = ["2","3"]
       lastcode = JSON.stringify(lastcode)
-      console.log('lastcode2:'+lastcode)
       await env.DB.put("txtfromgaza",lastcode)
       lastcode = await env.DB.get("txtfromgaza")
       lastcode = JSON.parse(lastcode)
@@ -861,7 +864,6 @@ const handleTxtfromgaza = async (request, env) => {
   } catch(e) {
     lastcode = [2]
     lastcode = JSON.stringify(lastcode)
-    console.log('lastcode3:'+lastcode)
     await env.DB.put("txtfromgaza",lastcode)
     lastcode = await env.DB.get("txtfromgaza")
     lastcode = JSON.parse(lastcode)
@@ -877,9 +879,15 @@ const handleTxtfromgaza = async (request, env) => {
       let title = data[i].title || ""
       title = title.replace("##########","")
       title = decodeEntities(title)
+      if(title.includes("Ibrani"))continue
+      title = title+" #txtfromgaza #gaza #palestina #palestine"
       // jika bukan video skip
-      if(!data[i].video)continue      
-      if(title.includes("Ibrani"))continue      
+      if(!data[i].video)continue
+      if(!data[i].duration)continue
+      let duration = data[i].duration
+      duration = duration.split(":")
+      if(duration[0] != 0)continue
+      if(duration[1] > 30)continue                  
       if(data[i].video) {
         const response = await sendhookrender("video",title,data[i].video)
         data[i].response = response
@@ -888,7 +896,7 @@ const handleTxtfromgaza = async (request, env) => {
         continue
       }      
       output = JSON.stringify(data[i], null, 2)
-      lastcode.push = data[i].id
+      lastcode.push(data[i].id)
       lastcode = lastcode.slice(-50)
       lastcode = JSON.stringify(lastcode)
       await env.DB.put("txtfromgaza",lastcode)
