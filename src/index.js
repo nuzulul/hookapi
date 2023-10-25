@@ -33,6 +33,7 @@ const handleGet = async (request, env, id) => {
       case "infopalestina2": return await handleInfopalestina2(request, env)
       case "infopalestina3": return await handleInfopalestina3(request, env)
       case "infopalestina4": return await handleInfopalestina4(request, env)
+      case "txtfromgaza": return await handleTxtfromgaza(request, env)
       case "testing": return await handleTesting(request, env)
       default: return await handleDefault(request, env)
     }
@@ -128,6 +129,57 @@ async function sendtelegram(format,caption,src) {
         return 'Error occurred while sending the message.'
       }
   }
+}
+
+async function sendhookrender(command,caption,source) {
+
+      async function gatherResponse(response) {
+        const { headers } = response;
+        const contentType = headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          return JSON.stringify(await response.json());
+        } else if (contentType.includes("application/text")) {
+          return response.text();
+        } else if (contentType.includes("text/html")) {
+          return response.text();
+        } else {
+          return response.text();
+        }
+      }
+      
+      const apiUrl = `https://hookrender.onrender.com/posting`;
+      const API_TOKEN_NUZULZ_HOOKRENDERKEY = myenv.API_TOKEN_NUZULZ_HOOKRENDERKEY
+      const API_TOKEN_NUZULZ_HOOKRENDERUSER = myenv.API_TOKEN_NUZULZ_HOOKRENDERUSER
+      const API_TOKEN_NUZULZ_HOOKRENDERPASS = myenv.API_TOKEN_NUZULZ_HOOKRENDERPASS
+      const params = {
+        command: command,
+        source: source,
+        caption: caption,
+        apikey: API_TOKEN_NUZULZ_HOOKRENDERKEY,
+        user: API_TOKEN_NUZULZ_HOOKRENDERUSER,
+        pass: API_TOKEN_NUZULZ_HOOKRENDERPASS
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(params),
+        });
+
+        const results = await gatherResponse(response)
+        if (results == "ok") {
+          return results
+        } else {
+          return "error"
+        }
+        
+      } catch (error) {
+        console.error(error);
+        return "error"
+      }
 }
 
 async function translatetext(sourceLanguage,targetLanguage,text) {
@@ -700,6 +752,146 @@ const handleInfopalestina4 = async (request, env) => {
       }      
       output = JSON.stringify(data[i], null, 2)
       await env.DB.put("infopalestina4",data[i].id)
+      break
+    }
+  }
+  
+  //const res = json
+  const res = output
+  return new Response(res, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
+    }
+  });
+      
+}
+
+const handleTxtfromgaza = async (request, env) => {
+
+  addEventListener("fetch", event => {
+    event.respondWith(handleRequest(event.request))
+  });
+
+  async function handleRequest(request) {
+    var values = [];
+    const url = "https://t.me/s/info_palestina"
+    var response = await fetch(url);
+    function addToLast(attr, text) {
+      var lastIndex = values.length - 1;
+      if (lastIndex < 0) {
+        // this shouldn't happen, since there should always have been
+        // an object created by the parent [data-code] div
+        return;
+      }
+      // need to add them to the previous value, just in case if there
+      // are multiple text chunks
+      values[lastIndex][attr] = (values[lastIndex][attr] || '') + text;
+    }
+    await new HTMLRewriter()
+      .on(".tgme_widget_message_wrap", { 
+        element(element) { 
+          values.push({
+            container: element.getAttribute("class")
+          });
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message", {
+        element(element) {
+          addToLast('code', element.getAttribute("data-post"));
+          const code = element.getAttribute("data-post")
+          const arr = code.split("/")
+          const id = arr[1]
+          addToLast('id',id)
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_text", {
+        text(text) {
+          addToLast('title', text.text);
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_photo_wrap", {
+        element(element) {
+
+          const regex = /background-image:url\(["']?([^"']*)["']?\)/gm;
+          const str = element.getAttribute("style");
+          let m;
+
+          while ((m = regex.exec(str)) !== null) {
+              // This is necessary to avoid infinite loops with zero-width matches
+              if (m.index === regex.lastIndex) {
+                  regex.lastIndex++;
+              }
+              
+              // The result can be accessed through the `m`-variable.
+              m.forEach((match, groupIndex) => {
+                  //console.log(`Found match, group ${groupIndex}: ${match}`);
+                  if (groupIndex == 1) addToLast('photo', match);
+              });
+          }
+          
+          
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_video_player .tgme_widget_message_video_wrap video", {
+        element(element) {
+          addToLast('video', element.getAttribute("src"));
+        }
+      })
+      .transform(response).arrayBuffer();
+    
+    return values
+  }
+  
+  const data = await handleRequest(request)
+  const json = JSON.stringify(data, null, 2)
+  let lastcode
+  try{
+    lastcode = await env.DB.get("txtfromgaza")
+    lastcode = JSON.parse(lastcode)
+    console.log('lastcode1:'+lastcode)
+    if(lastcode == null){
+      lastcode = [2]
+      lastcode = JSON.stringify(lastcode)
+      console.log('lastcode2:'+lastcode)
+      await env.DB.put("txtfromgaza",lastcode)
+      lastcode = await env.DB.get("txtfromgaza")
+      lastcode = JSON.parse(lastcode)
+    }
+  } catch(e) {
+    lastcode = [2]
+    lastcode = JSON.stringify(lastcode)
+    console.log('lastcode3:'+lastcode)
+    await env.DB.put("txtfromgaza",lastcode)
+    lastcode = await env.DB.get("txtfromgaza")
+    lastcode = JSON.parse(lastcode)
+  }
+  console.log(lastcode)
+  let output = '{"status":"ok"}'
+  
+  for (let i = data.length - 1; i > -1;i--) {
+    //console.log(data[i])
+    if (!lastcode.includes(data[i].id)) {
+    //if (data[i].id == 8080) {
+      
+      let title = data[i].title || ""
+      title = title.replace("##########","")
+      title = decodeEntities(title)
+      // jika bukan video skip
+      if(!data[i].video)continue      
+      if(title.includes("Ibrani"))continue      
+      if(data[i].video) {
+        const response = await sendhookrender("video",title,data[i].video)
+        data[i].response = response
+      }
+      else {
+        continue
+      }      
+      output = JSON.stringify(data[i], null, 2)
+      lastcode.push = data[i].id
+      lastcode = lastcode.slice(-50)
+      lastcode = JSON.stringify(lastcode)
+      await env.DB.put("txtfromgaza",lastcode)
       break
     }
   }
