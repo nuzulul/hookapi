@@ -594,6 +594,7 @@ const handleInfopalestina3 = async (request, env) => {
       let title = data[i].title || ""
       title = title.replace("##########","")
       title = decodeEntities(title)
+      title = title.replace("&rlm;","")
       // jika bukan photo atau video skip
       if((!data[i].photo)&&(!data[i].video))continue
       let translateid = await translatetext("ar","id",title)
