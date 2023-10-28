@@ -341,9 +341,9 @@ const handleInfopalestina = async (request, env) => {
     //console.log(data[i])
     if (data[i].id > lastcode) {
     //if (data[i].id == 8080) {
-      let title = data[i].title || ""
-      title = title.replace("#SahabatPalestina_ID","")
+      let title = data[i].title || ""      
       title = decodeEntities(title)
+      title = title.replace("#SahabatPalestina_ID","")
       //console.log(title)
       if(title.includes('donasi'))continue
       if(title.includes('SahabatPalestinaID'))continue
