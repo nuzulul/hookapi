@@ -598,6 +598,7 @@ const handleInfopalestina3 = async (request, env) => {
       // jika bukan photo atau video skip
       if((!data[i].photo)&&(!data[i].video))continue
       let translateid = await translatetext("ar","id",title)
+      translateid = translateid.replace("#Shehab:","")
       translateid = translateid.replace("#Shehab","")
       translateid = translateid.replace("Shehab","")
       translateid = translateid.replace("Koresponden","")      
