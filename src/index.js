@@ -336,11 +336,14 @@ const handleInfopalestina = async (request, env) => {
   const lastcode = await env.DB.get("infopalestina")
   //console.log(lastcode)
   let output = '{"status":"ok"}'
-  
+  //console.log(data)
   for (let i = 0; i < data.length - 1;i++) {
-    //console.log(data[i])
-    if (data[i].id > lastcode) {
+    //console.log('id:'+data[i].id)
+    //console.log('lastcode:'+lastcode)
+    //if (data[i].id > parseInt(lastcode))console.log('ok')
+    if (data[i].id > parseInt(lastcode)) {
     //if (data[i].id == 8080) {
+      //console.log('id:'+data[i].id)
       let title = data[i].title || ""      
       title = decodeEntities(title)
       title = title.replace("#SahabatPalestina_ID","")
@@ -460,7 +463,7 @@ const handleInfopalestina2 = async (request, env) => {
   
   for (let i = 0; i < data.length - 1;i++) {
     //console.log(data[i])
-    if (data[i].id > lastcode) {
+    if (data[i].id > parseInt(lastcode)) {
     //if (data[i].id == 8080) {
       
       let title = data[i].title || ""
@@ -588,7 +591,7 @@ const handleInfopalestina3 = async (request, env) => {
   
   for (let i = 0; i < data.length - 1;i++) {
     //console.log(data[i])
-    if (data[i].id > lastcode) {
+    if (data[i].id > parseInt(lastcode)) {
     //if (data[i].id == 8080) {
       
       let title = data[i].title || ""
@@ -728,7 +731,7 @@ const handleInfopalestina4 = async (request, env) => {
   
   for (let i = 0; i < data.length - 1;i++) {
     //console.log(data[i])
-    if (data[i].id > lastcode) {
+    if (data[i].id > parseInt(lastcode)) {
     //if (data[i].id == 49077) {
       
       let title = data[i].title || ""
@@ -986,7 +989,8 @@ const handleTesting = async (request, env) => {
   
   let output = {
     status: "ok",
-    testingdb1: testingdb1
+    testingdb1: testingdb1,
+    testingkv1: await env.DB.get("infopalestina")
   }
   
   let res = JSON.stringify(output)
