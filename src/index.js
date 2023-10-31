@@ -337,7 +337,7 @@ const handleInfopalestina = async (request, env) => {
   //console.log(lastcode)
   let output = '{"status":"ok"}'
   //console.log(data)
-  for (let i = 0; i < data.length - 1;i++) {
+  for (let i = 0; i < data.length;i++) {
     //console.log('id:'+data[i].id)
     //console.log('lastcode:'+lastcode)
     //if (data[i].id > parseInt(lastcode))console.log('ok')
@@ -461,7 +461,7 @@ const handleInfopalestina2 = async (request, env) => {
   //console.log(lastcode)
   let output = '{"status":"ok"}'
   
-  for (let i = 0; i < data.length - 1;i++) {
+  for (let i = 0; i < data.length;i++) {
     //console.log(data[i])
     if (data[i].id > parseInt(lastcode)) {
     //if (data[i].id == 8080) {
@@ -589,7 +589,7 @@ const handleInfopalestina3 = async (request, env) => {
   //console.log(lastcode)
   let output = '{"status":"ok"}'
   
-  for (let i = 0; i < data.length - 1;i++) {
+  for (let i = 0; i < data.length;i++) {
     //console.log(data[i])
     if (data[i].id > parseInt(lastcode)) {
     //if (data[i].id == 8080) {
@@ -729,7 +729,7 @@ const handleInfopalestina4 = async (request, env) => {
   let output = '{"status":"ok"}'
   let breakingimg = "https://cdn5.telegram-cdn.org/file/qJmSigOp3-TNali5erzz77z_xx0AWw0Ps8o36JkHHKKYwgvixl5g801nzY8VqElgWpsJbFfqug9oNpcniGp-3MG3pGai9QH9a_Nk31nHqRoJDWig-7KcN6cF4X38h-VPdJRUx5hUoP7n2SI2qWV94Cp0NFanHqTOt8SXwkC_7XsgOT0ZDrj5qyaGw5PfQME_tCx6kVYWlsIVbgoT8rRPRVyeSmE1-XnEMoCOIieLJQw__bVYiMq3pEeSyprG9csuEGp_cAZxN1kWv_R7pa0u7COcEEIRbe1BM5O5ei2vLQ-ufY2EOJMXpG3rkkcgVzIVFnJlJRmOJewniSLg4yBTlg.jpg"
   
-  for (let i = 0; i < data.length - 1;i++) {
+  for (let i = 0; i < data.length;i++) {
     //console.log(data[i])
     if (data[i].id > parseInt(lastcode)) {
     //if (data[i].id == 49077) {
