@@ -588,6 +588,7 @@ const handleInfopalestina3 = async (request, env) => {
   }
   //console.log(lastcode)
   let output = '{"status":"ok"}'
+  let breakingimg = "https://cdn5.telegram-cdn.org/file/qJmSigOp3-TNali5erzz77z_xx0AWw0Ps8o36JkHHKKYwgvixl5g801nzY8VqElgWpsJbFfqug9oNpcniGp-3MG3pGai9QH9a_Nk31nHqRoJDWig-7KcN6cF4X38h-VPdJRUx5hUoP7n2SI2qWV94Cp0NFanHqTOt8SXwkC_7XsgOT0ZDrj5qyaGw5PfQME_tCx6kVYWlsIVbgoT8rRPRVyeSmE1-XnEMoCOIieLJQw__bVYiMq3pEeSyprG9csuEGp_cAZxN1kWv_R7pa0u7COcEEIRbe1BM5O5ei2vLQ-ufY2EOJMXpG3rkkcgVzIVFnJlJRmOJewniSLg4yBTlg.jpg"
   
   for (let i = 0; i < data.length;i++) {
     //console.log(data[i])
@@ -601,6 +602,7 @@ const handleInfopalestina3 = async (request, env) => {
       title = title.replace("&lrm;","")
       // jika bukan photo atau video skip
       if((!data[i].photo)&&(!data[i].video))continue
+      if(title.includes("shehabnews.com"))continue
       let translateid = await translatetext("ar","id",title)
       translateid = translateid.replace("#Shehab:","")
       translateid = translateid.replace("#Shehab","")
@@ -608,10 +610,16 @@ const handleInfopalestina3 = async (request, env) => {
       translateid = translateid.replace("Koresponden","")      
       if(translateid == "error") {continue}else{data[i].translate = translateid}
       if(translateid.includes("Ibrani"))continue
-      if(translateid.startsWith("Mendesak"))translateid = translateid.replace("Mendesak","Terkini")      
+      if(translateid.startsWith("Mendesak"))translateid = translateid.replace("Mendesak","Breaking News")      
       if(data[i].photo) {
-        const response = await sendtelegram("photo",translateid,data[i].photo)
-        data[i].response = response
+        if(translateid.startsWith("#Mendesak")){
+            translateid = translateid.replace("#Mendesak","#BreakingNews")
+            const response = await sendtelegram("photo",translateid,breakingimg)
+            data[i].response = response
+        }else{
+            const response = await sendtelegram("photo",translateid,data[i].photo)
+            data[i].response = response
+        }
       }
       else if(data[i].video) {
         const response = await sendtelegram("video",translateid,data[i].video)
