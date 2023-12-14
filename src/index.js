@@ -29,12 +29,13 @@ async function handleRequest(request, env, ctx) {
 const handleGet = async (request, env, id) => {
   if (id) {
     switch(id) {
+      case "testing": return await handleTesting(request, env)
       case "infopalestina": return await handleInfopalestina(request, env)
       case "infopalestina2": return await handleInfopalestina2(request, env)
       case "infopalestina3": return await handleInfopalestina3(request, env)
       case "infopalestina4": return await handleInfopalestina4(request, env)
       case "txtfromgaza": return await handleTxtfromgaza(request, env)
-      case "testing": return await handleTesting(request, env)
+      case "infodonordarah": return await handleInfodonordarah(request, env)
       default: return await handleDefault(request, env)
     }
   }
@@ -43,10 +44,12 @@ const handleGet = async (request, env, id) => {
   }
 }
 
-async function sendtelegram(format,caption,src) {
+async function sendtelegram(code,format,caption,src) {
   
   const TELEGRAM_BOT_TOKEN = myenv.API_TOKEN_TELEGRAM_NUZULUL_INFOBSMIBOT
-  const chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA
+  let chatId = ""
+  if(code=='INFOPALESTINA')chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA
+  if(code=='INFODONORDARAH')chatId = myenv.TELEGRAM_CHATID_INFODONORDARAH
   //const chatId = "@bsmi_tv"
   
   if(format == "photo") {
@@ -249,10 +252,84 @@ function decodeEntities(encodedString) {
     });
 }
 
+class Hookdb {
+  constructor() {    
+    return this.init()
+  }
+  async init() {
+    return this
+  }
+  async put(key,value) {
+    const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
+    const values = await stmt.first()
+    if(values == null){
+      const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
+      const values = await stmt.run()
+      return values
+    }else{
+      const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
+      const values = await stmt.run()
+      return values
+    }
+    return values
+  }
+  async insert(key,value) {
+      const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
+      const values = await stmt.run()
+      return values
+  }
+  async update(key,value) {
+      const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
+      const values = await stmt.run()
+      return values
+  }
+  async get(key) {
+    const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
+    const values = await stmt.first();
+    let output
+    if(values == null){
+      output = null
+    } else {
+      output = values.myvalue
+    }
+    return output
+  }
+}
+
 const handleDefault = async (request, env) => {
   return new Response("ok");
 }
 
+const handleTesting = async (request, env) => {
+
+  async function testingdb(){
+    let lastcode
+    try{
+      const hookdb = await new Hookdb()
+      lastcode = await hookdb.get("testing")
+      if (lastcode == null) {
+        await hookdb.put("testing",2)
+        lastcode = await hookdb.get("testing")
+      }
+    } catch(e) {}
+    return lastcode
+  }  
+  let testingdb1 = await testingdb()
+  
+  let output = {
+    status: "ok",
+    testingdb1: testingdb1,
+    testingkv1: await env.DB.get("infopalestina")
+  }
+  
+  let res = JSON.stringify(output)
+  
+  return new Response(res, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8"
+    }
+  });
+}
 
 const handleInfopalestina = async (request, env) => {
 
@@ -351,15 +428,15 @@ const handleInfopalestina = async (request, env) => {
       if(title.includes('donasi'))continue
       if(title.includes('SahabatPalestinaID'))continue
       if(data[i].photo) {
-        const response = await sendtelegram("photo",title,data[i].photo)
+        const response = await sendtelegram("INFOPALESTINA","photo",title,data[i].photo)
         data[i].response = response
       }
       else if(data[i].video) {
-        const response = await sendtelegram("video",title,data[i].video)
+        const response = await sendtelegram("INFOPALESTINA","video",title,data[i].video)
         data[i].response = response
       }
       else {
-        const response = await sendtelegram("text",title,"")
+        const response = await sendtelegram("INFOPALESTINA","text",title,"")
         data[i].response = response
       }      
       output = JSON.stringify(data[i], null, 2)
@@ -472,15 +549,15 @@ const handleInfopalestina2 = async (request, env) => {
       if(title.includes('donasi'))continue
       if(title.includes('infopalestineterkini'))continue
       if(data[i].photo) {
-        const response = await sendtelegram("photo",title,data[i].photo)
+        const response = await sendtelegram("INFOPALESTINA","photo",title,data[i].photo)
         data[i].response = response
       }
       else if(data[i].video) {
-        const response = await sendtelegram("video",title,data[i].video)
+        const response = await sendtelegram("INFOPALESTINA","video",title,data[i].video)
         data[i].response = response
       }
       else {
-        //const response = await sendtelegram("text",title,"")
+        //const response = await sendtelegram("INFOPALESTINA","text",title,"")
         //data[i].response = response
         continue
       }      
@@ -614,20 +691,20 @@ const handleInfopalestina3 = async (request, env) => {
       if(data[i].photo) {
         if(translateid.startsWith("#Mendesak")){
             translateid = translateid.replace("#Mendesak","#BreakingNews")
-            const response = await sendtelegram("photo",translateid,breakingimg)
+            const response = await sendtelegram("INFOPALESTINA","photo",translateid,breakingimg)
             data[i].response = response
         }else{
-            const response = await sendtelegram("photo",translateid,data[i].photo)
+            const response = await sendtelegram("INFOPALESTINA","photo",translateid,data[i].photo)
             data[i].response = response
         }
       }
       else if(data[i].video) {
-        const response = await sendtelegram("video",translateid,data[i].video)
+        const response = await sendtelegram("INFOPALESTINA","video",translateid,data[i].video)
         data[i].response = response
       }
       else {
         continue
-        //const response = await sendtelegram("text",title,"")
+        //const response = await sendtelegram("INFOPALESTINA","text",title,"")
         //data[i].response = response
       }      
       output = JSON.stringify(data[i], null, 2)
@@ -751,19 +828,19 @@ const handleInfopalestina4 = async (request, env) => {
         let mytitle = data[i].title || ""
         if (mytitle.includes("Breaking")) {
           translateid = "Breaking News "+translateid
-          const response = await sendtelegram("photo",translateid,breakingimg)
+          const response = await sendtelegram("INFOPALESTINA","photo",translateid,breakingimg)
           data[i].response = response
         } else {continue}
       }
       else if(data[i].video) {
-        const response = await sendtelegram("video",translateid,data[i].video)
+        const response = await sendtelegram("INFOPALESTINA","video",translateid,data[i].video)
         data[i].response = response
       }
       else {
         let mytitle = data[i].title || ""
         if (mytitle.includes("Breaking")) {
           translateid = "Breaking News "+translateid
-          const response = await sendtelegram("photo",translateid,breakingimg)
+          const response = await sendtelegram("INFOPALESTINA","photo",translateid,breakingimg)
           data[i].response = response
         } else {continue}
       }      
@@ -935,77 +1012,147 @@ const handleTxtfromgaza = async (request, env) => {
       
 }
 
-class Hookdb {
-  constructor() {    
-    return this.init()
-  }
-  async init() {
-    return this
-  }
-  async put(key,value) {
-    const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
-    const values = await stmt.first()
-    if(values == null){
-      const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
-      const values = await stmt.run()
-      return values
-    }else{
-      const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
-      const values = await stmt.run()
-      return values
+const handleInfodonordarah = async (request, env) => {
+
+  addEventListener("fetch", event => {
+    event.respondWith(handleRequest(event.request))
+  });
+
+  async function handleRequest(request) {
+    var values = [];
+    const url = "https://blood4life.id/pasien?tipe=semua&darah=semua"
+    var response = await fetch(url);
+    function addToLast(attr, text) {
+      var lastIndex = values.length - 1;
+      if (lastIndex < 0) {
+        // this shouldn't happen, since there should always have been
+        // an object created by the parent [data-code] div
+        return;
+      }
+      // need to add them to the previous value, just in case if there
+      // are multiple text chunks
+      values[lastIndex][attr] = (values[lastIndex][attr] || '') + text;
     }
+    await new HTMLRewriter()
+      .on("section.products.py-4 > div > div:nth-child(1) > div", { 
+        element(element) { 
+          values.push({
+            container: element.getAttribute("class")
+          });
+        }
+      })
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.meta.mb-2 > h4 > span.badge.badge-standard.badge-light.mr-2", {
+        text(text) {
+          addToLast('lokasi', text.text);
+        }
+      })
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > a > h2", {
+        text(text) {
+          addToLast('id', text.text);
+        }
+      })      
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(1) > div > span", {
+        text(text) {
+          addToLast('nama', text.text);
+        }
+      }) 
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(2) > div > span", {
+        text(text) {
+          addToLast('goldar', text.text);
+        }
+      }) 
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(3) > div > span", {
+        text(text) {
+          addToLast('jumlah', text.text);
+        }
+      }) 
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(4) > div > span", {
+        text(text) {
+          addToLast('jenis', text.text);
+        }
+      }) 
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(5) > div > span", {
+        text(text) {
+          addToLast('rs', text.text);
+        }
+      }) 
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(6) > div > span", {
+        text(text) {
+          addToLast('narahubung', text.text);
+        }
+      }) 
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(7) > div > span", {
+        text(text) {
+          addToLast('kontak', text.text);
+        }
+      }) 
+      .on("section.products.py-4 > div > div:nth-child(1) > div > div > div.content.mt-1 > div:nth-child(8) > div > span", {
+        text(text) {
+          addToLast('tanggal', text.text);
+        }
+      }) 
+
+      .transform(response).arrayBuffer();
+    
     return values
   }
-  async insert(key,value) {
-      const stmt = myenv.D1.prepare('INSERT INTO hookkv (mykey,myvalue) VALUES (?1,?2)').bind(key,value);
-      const values = await stmt.run()
-      return values
-  }
-  async update(key,value) {
-      const stmt = myenv.D1.prepare('UPDATE hookkv SET myvalue = ?2 WHERE mykey = ?1').bind(key,value);
-      const values = await stmt.run()
-      return values
-  }
-  async get(key) {
-    const stmt = myenv.D1.prepare('SELECT myvalue FROM hookkv WHERE mykey = ?1').bind(key);
-    const values = await stmt.first();
-    let output
-    if(values == null){
-      output = null
-    } else {
-      output = values.myvalue
+  
+  const data = await handleRequest(request)
+  data.forEach(function(arr,index){
+    if(arr.container != 'col-lg-6 col-12')data.splice(index, 1);
+  })
+  data.reverse()
+  
+  const hookdb = await new Hookdb()
+  let kodedonor
+  try{
+    console.log('db ok')
+    kodedonor = await hookdb.get("infodonordarah")
+    if(kodedonor == null){
+      let data = JSON.stringify(['#A'])
+      await hookdb.put("infodonordarah",data)
+      kodedonor = await hookdb.get("infodonordarah")
     }
-    return output
+  } catch(e) {
+    console.log('db error')
   }
-}
-
-const handleTesting = async (request, env) => {
-
-  async function testingdb(){
-    let lastcode
-    try{
-      const hookdb = await new Hookdb()
-      lastcode = await hookdb.get("testing")
-      if (lastcode == null) {
-        await hookdb.put("testing",2)
-        lastcode = await hookdb.get("testing")
-      }
-    } catch(e) {}
-    return lastcode
-  }  
-  let testingdb1 = await testingdb()
+  if(kodedonor != undefined) kodedonor = JSON.parse(kodedonor)
+  //console.log(kodedonor)
+  let output = '{"status":"ok"}'
   
-  let output = {
-    status: "ok",
-    testingdb1: testingdb1,
-    testingkv1: await env.DB.get("infopalestina")
+  for(let i=0;i<data.length;i++){
+        if(!kodedonor.includes(data[i].id)){
+          console.log('run')
+          kodedonor.push(data[i].id)
+          kodedonor = kodedonor.slice(-50)
+          await hookdb.put("infodonordarah",JSON.stringify(kodedonor))
+          let msg = "URGENT\n\n"+
+                    "Dibutuhkan relawan merah donor darah segera sebagai berikut:\n"+
+                    "1. Area :"+data[i].lokasi+"\n"+
+                    "2. Tanggal "+data[i].tanggal+"\n"+
+                    "3. Nama pasien "+data[i].nama+"\n"+
+                    "4. Golongan darah "+data[i].goldar+"\n"+
+                    "5. Jumlah pendonor "+data[i].jumlah+"\n"+
+                    "6. Jenis donor "+data[i].jenis+"\n"+
+                    "7. Rumah Sakit "+data[i].rs+"\n"+
+                    "8. Narahubung "+data[i].narahubung+"\n"+
+                    "9. HP "+data[i].kontak+"\n"+
+                    "10. Keterangan : -\n\n"+
+                    "Diharap dapat membantu menyebarluaskan informasi ini. Permintaan donor darah https://forms.gle/3LoD4MnAVCF9NMUb7 . Demikian atas perhatiannya disampaikan banyak terima kasih."
+          const response = await sendtelegram("INFODONORDARAH","text",msg,"")
+          data[i].response = response
+          output = JSON.stringify(data[i], null, 2)
+          break
+        }
   }
   
-  let res = JSON.stringify(output)
-  
+  //const res = json
+  const res = output
   return new Response(res, {
     headers: {
       "content-type": "application/json;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
     }
   });
+      
 }
