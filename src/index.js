@@ -36,6 +36,7 @@ const handleGet = async (request, env, id) => {
       case "infopalestina4": return await handleInfopalestina4(request, env)
       case "txtfromgaza": return await handleTxtfromgaza(request, env)
       case "infodonordarah": return await handleInfodonordarah(request, env)
+      case "bsmimobile": return await handleBsmimobile(request, env)
       default: return await handleDefault(request, env)
     }
   }
@@ -50,6 +51,7 @@ async function sendtelegram(code,format,caption,src) {
   let chatId = ""
   if(code=='INFOPALESTINA')chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA
   if(code=='INFODONORDARAH')chatId = myenv.TELEGRAM_CHATID_INFODONORDARAH
+  if(code=='BSMIMOBILE')chatId = myenv.TELEGRAM_CHATID_BSMIMOBILE
   //const chatId = "@bsmi_tv"
   
   if(format == "photo") {
@@ -228,6 +230,59 @@ async function translatetext(sourceLanguage,targetLanguage,text) {
         } else {
           return "error"
         }
+        
+      } catch (error) {
+        console.error(error);
+        return "error"
+      }
+}
+
+async function sendonesignalbsmimobile(channel,headings, msg) {
+
+      async function gatherResponse(response) {
+        const { headers } = response;
+        const contentType = headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          return JSON.stringify(await response.json());
+        } else if (contentType.includes("application/text")) {
+          return response.text();
+        } else if (contentType.includes("text/html")) {
+          return response.text();
+        } else {
+          return response.text();
+        }
+      }
+      
+      const apiUrl = `https://onesignal.com/api/v1/notifications`;
+      const API_TOKEN_NUZULZ_ONESIGNALBSMIMOBILE = myenv.API_TOKEN_NUZULZ_ONESIGNALBSMIMOBILE
+      const params = {
+            contents: {
+              "en": msg,
+            },
+            headings: {
+              "en": headings,
+            },
+            small_icon: 'notification',
+            app_id: "53202db7-cdda-4516-bb79-de714bc889c9", //BSMIMOBILE
+            android_channel_id: channel,
+            included_segments: [
+                //'All',
+                'Test Users'
+              ]
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic '+API_TOKEN_NUZULZ_ONESIGNALBSMIMOBILE
+          },
+          body: JSON.stringify(params),
+        });
+
+        const results = await gatherResponse(response)
+        return results
         
       } catch (error) {
         console.error(error);
@@ -1155,4 +1210,234 @@ const handleInfodonordarah = async (request, env) => {
     }
   });
       
+}
+
+const handleBsmimobile = async (request, env) => {
+  addEventListener("fetch", event => {
+    event.respondWith(handleRequest(event.request))
+  });
+  
+  async function handleRequest(request) {
+    const sourcegempa = 'https://data.bmkg.go.id/DataMKG/TEWS/autogempa.xml'
+    const sourceerupsi = 'https://magma.esdm.go.id/v1/gunung-api/informasi-letusan'
+    const sourcetsunami = 'https://bmkg-content-inatews.storage.googleapis.com/last30tsunamievent.xml'
+    
+    const [datagempa,dataerupsi,datatsunami] = await Promise.all([
+      fetch(sourcegempa),
+      fetch(sourceerupsi),
+      fetch(sourcetsunami)
+    ])
+    
+    //const resultgempa1 = await datagempa.text()
+    //const resulterupsi = await dataerupsi.text()
+    //const resulttsunami = await datatsunami.text()
+    
+    const resultgempa = {}
+    const resulterupsi = {}
+    const resulttsunami = {}
+    
+    await new HTMLRewriter()
+    .on("Infogempa > gempa > Tanggal", {
+      text(text) {
+        if(resultgempa.tanggal == undefined)resultgempa.tanggal = text.text
+      }
+    })
+    .on("Infogempa > gempa > Jam", {
+      text(text) {
+        if(resultgempa.jam == undefined)resultgempa.jam = text.text
+      }
+    })
+    .on("Infogempa > gempa > DateTime", {
+      text(text) {
+        if(resultgempa.datetime == undefined)resultgempa.datetime = text.text
+      }
+    })
+    .on("Infogempa > gempa > point > coordinates", {
+      text(text) {
+        if(resultgempa.coordinates == undefined)resultgempa.coordinates = text.text
+      }
+    })
+    .on("Infogempa > gempa > Lintang", {
+      text(text) {
+        if(resultgempa.lintang == undefined)resultgempa.lintang = text.text
+      }
+    })
+    .on("Infogempa > gempa > Bujur", {
+      text(text) {
+        if(resultgempa.bujur == undefined)resultgempa.bujur = text.text
+      }
+    })
+    .on("Infogempa > gempa > Magnitude", {
+      text(text) {
+        if(resultgempa.magnitude == undefined)resultgempa.magnitude = text.text
+      }
+    })
+    .on("Infogempa > gempa > Kedalaman", {
+      text(text) {
+        if(resultgempa.kedalaman == undefined)resultgempa.kedalaman = text.text
+      }
+    })
+    .on("Infogempa > gempa > Wilayah", {
+      text(text) {
+        if(resultgempa.wilayah == undefined)resultgempa.wilayah = text.text
+      }
+    })
+    .on("Infogempa > gempa > Potensi", {
+      text(text) {
+        if(resultgempa.potensi == undefined)resultgempa.potensi = text.text
+      }
+    })
+    .on("Infogempa > gempa > Dirasakan", {
+      text(text) {
+        if(resultgempa.dirasakan == undefined)resultgempa.dirasakan = text.text
+      }
+    })
+    .on("Infogempa > gempa > Shakemap", {
+      text(text) {
+        if(resultgempa.shakemap == undefined)resultgempa.shakemap = text.text
+      }
+    })
+    .transform(datagempa).arrayBuffer();
+    
+    await new HTMLRewriter()
+    .on("body > div.slim-mainpanel > div > div.row.row-sm.row-timeline > div.col-lg-8 > div:nth-child(3) > div.timeline-group.mg-t-20.mg-b-20 > div:nth-child(2) > div.timeline-body > p.timeline-title > a", {
+      text(text) {
+        if(resulterupsi.gunung == undefined)resulterupsi.gunung = text.text
+      }
+    })
+    .on("body > div.slim-mainpanel > div > div.row.row-sm.row-timeline > div.col-lg-8 > div:nth-child(3) > div.timeline-group.mg-t-20.mg-b-20 > div:nth-child(2) > div.timeline-body > p.timeline-text", {
+      text(text) {
+        let laporan = text.text
+        let result = laporan.replace(/^\s+|\s+$/gm,'');
+        if(resulterupsi.laporan == undefined)resulterupsi.laporan = result
+      }
+    })
+    .on("body > div.slim-mainpanel > div > div.row.row-sm.row-timeline > div.col-lg-8 > div:nth-child(3) > div.timeline-group.mg-t-20.mg-b-20 > div:nth-child(2) > div.timeline-body > div:nth-child(4) > div > a", {
+      element(element) {
+        if(resulterupsi.gambar == undefined)resulterupsi.gambar = element.getAttribute("href")
+      }
+    })
+    .transform(dataerupsi).arrayBuffer();
+    
+    await new HTMLRewriter()
+    .on("alert > info > date", {
+      text(text) {
+        if(resulttsunami.date == undefined)resulttsunami.date = text.text
+      }
+    })
+    .on("alert > info > time", {
+      text(text) {
+        if(resulttsunami.time == undefined)resulttsunami.time = text.text
+      }
+    })
+    .on("alert > info > eventid", {
+      text(text) {
+        if(resulttsunami.eventid == undefined)resulttsunami.eventid = text.text
+      }
+    })
+    .on("alert > info > subject", {
+      text(text) {
+        if(resulttsunami.subject == undefined)resulttsunami.subject = text.text
+      }
+    })
+    .on("alert > info > headline", {
+      text(text) {
+        if(resulttsunami.headline == undefined)resulttsunami.headline = text.text
+      }
+    })
+    .on("alert > info > description", {
+      text(text) {
+        if(resulttsunami.description == undefined)resulttsunami.description = text.text
+      }
+    })
+    .on("alert > info > shakemap", {
+      text(text) {
+        if(resulttsunami.shakemap == undefined)resulttsunami.shakemap = text.text
+      }
+    })
+    .transform(datatsunami).arrayBuffer();
+    
+    const data = {resultgempa,resulterupsi,resulttsunami}
+    return data
+  }
+  
+  const data = await handleRequest(request)
+
+  const hookdb = await new Hookdb()
+  let bsmimobile
+  try{
+    console.log('db ok')
+    bsmimobile = await hookdb.get("bsmimobile")
+    if(bsmimobile == null){
+      let defaultdata = JSON.stringify({gempa:'0',erupsi:'0',tsunami:'0'})
+      await hookdb.put("bsmimobile",defaultdata)
+      bsmimobile = await hookdb.get("bsmimobile")
+    }
+  } catch(e) {
+    console.log('db error')
+  }
+  if(bsmimobile != undefined) bsmimobile = JSON.parse(bsmimobile)
+  //bsmimobile.tsunami = '0'
+  //console.log(bsmimobile)
+  
+  if(data.resultgempa.datetime != bsmimobile.gempa){
+      bsmimobile.gempa = data.resultgempa.datetime
+      data.resultgempa.status = 'send'
+      let dirasakan = ''
+      if(data.resultgempa.dirasakan !='-')dirasakan = ', Dirasakan:'+data.resultgempa.dirasakan
+      const img = 'https://data.bmkg.go.id/DataMKG/TEWS/'+data.resultgempa.shakemap
+      const msg = 'Info Gempa Mag:'+data.resultgempa.magnitude+', Tanggal:'+data.resultgempa.tanggal+' '+data.resultgempa.jam+', Koordinat:'+data.resultgempa.coordinates+', Kedalaman:'+data.resultgempa.kedalaman+', Wilayah:'+data.resultgempa.wilayah+dirasakan+', '+data.resultgempa.potensi+' '+img
+      const response = await sendtelegram("BSMIMOBILE","text",msg,"")
+      data.resultgempa.telegram = response
+      const channel = '948f8e4d-3b32-46f6-9b25-d732c72a3447'
+      const headings = 'Gempa Bumi M '+data.resultgempa.magnitude
+      //const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
+      //data.resultgempa.onesignal = onesignal
+  }else{
+      data.resultgempa.status = 'same'
+  }
+
+  if(data.resulterupsi.laporan != bsmimobile.erupsi){
+      bsmimobile.erupsi = data.resulterupsi.laporan
+      data.resulterupsi.status = 'send'
+      let laporan = data.resulterupsi.laporan
+      laporan = laporan.replaceAll("&plusmn;","+-")
+      const msg = laporan+' '+data.resulterupsi.gambar
+      const response = await sendtelegram("BSMIMOBILE","text",msg,"")
+      data.resulterupsi.telegram = response
+      const channel = '50c71637-13a0-4cf2-a18d-d5f54f7d53a9'
+      const headings = 'Erupsi G. '+data.resulterupsi.gunung
+      //const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
+      //data.resulterupsi.onesignal = onesignal
+  }else{
+      data.resulterupsi.status = 'same'
+  }
+
+  if(data.resulttsunami.eventid != bsmimobile.tsunami){
+      bsmimobile.tsunami = data.resulttsunami.eventid
+      data.resulttsunami.status = 'send'
+      const img = 'https://data.bmkg.go.id/DataMKG/TEWS/'+data.resulttsunami.shakemap
+      const msg = data.resulttsunami.subject+'\n\n'+data.resulttsunami.headline+' '+img
+      const response = await sendtelegram("BSMIMOBILE","text",msg,"")
+      data.resulttsunami.telegram = response
+      const channel = '0a7ca4ad-9a3b-4f88-acf6-7dc1ef38941d'
+      const headings = data.resulttsunami.subject
+      const msgtxt = data.resulttsunami.headline
+      //const onesignal = await sendonesignalbsmimobile(channel,headings, msgtxt)
+      //data.resulttsunami.onesignal = onesignal
+  }else{
+      data.resulttsunami.status = 'same'
+  }
+  
+  await hookdb.put("bsmimobile",JSON.stringify(bsmimobile))
+  let output = '{"status":"ok"}'
+  output = JSON.stringify(data)
+
+  const res = output
+  return new Response(res, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
+    }
+  });  
 }
