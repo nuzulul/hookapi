@@ -1380,9 +1380,12 @@ const handleBsmimobile = async (request, env) => {
   //bsmimobile.tsunami = '0'
   //console.log(bsmimobile)
   
+  let send = false
+  
   if(data.resultgempa.datetime != bsmimobile.gempa){
       bsmimobile.gempa = data.resultgempa.datetime
       data.resultgempa.status = 'send'
+      send = true
       let dirasakan = ''
       if(data.resultgempa.dirasakan !='-')dirasakan = ', Dirasakan:'+data.resultgempa.dirasakan
       const img = 'https://data.bmkg.go.id/DataMKG/TEWS/'+data.resultgempa.shakemap
@@ -1400,6 +1403,7 @@ const handleBsmimobile = async (request, env) => {
   if(data.resulterupsi.laporan != bsmimobile.erupsi){
       bsmimobile.erupsi = data.resulterupsi.laporan
       data.resulterupsi.status = 'send'
+      send = true
       let laporan = data.resulterupsi.laporan
       laporan = laporan.replaceAll("&plusmn;","+-")
       const msg = laporan+' '+data.resulterupsi.gambar
@@ -1416,6 +1420,7 @@ const handleBsmimobile = async (request, env) => {
   if(data.resulttsunami.eventid != bsmimobile.tsunami){
       bsmimobile.tsunami = data.resulttsunami.eventid
       data.resulttsunami.status = 'send'
+      send = true
       const img = 'https://data.bmkg.go.id/DataMKG/TEWS/'+data.resulttsunami.shakemap
       const msg = data.resulttsunami.subject+'\n\n'+data.resulttsunami.headline+' '+img
       const response = await sendtelegram("BSMIMOBILE","text",msg,"")
@@ -1429,7 +1434,7 @@ const handleBsmimobile = async (request, env) => {
       data.resulttsunami.status = 'same'
   }
   
-  await hookdb.put("bsmimobile",JSON.stringify(bsmimobile))
+  if(send)await hookdb.put("bsmimobile",JSON.stringify(bsmimobile))
   let output = '{"status":"ok"}'
   output = JSON.stringify(data)
 
