@@ -1382,7 +1382,7 @@ const handleBsmimobile = async (request, env) => {
   
   let send = false
   
-  if(data.resultgempa.datetime != bsmimobile.gempa){
+  if((data.resultgempa.datetime != bsmimobile.gempa)&&(data.resultgempa.datetime != undefined)){
       bsmimobile.gempa = data.resultgempa.datetime
       data.resultgempa.status = 'send'
       send = true
