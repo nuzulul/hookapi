@@ -1222,7 +1222,8 @@ const handleBsmimobile = async (request, env) => {
   async function handleRequest(request) {
   
     const random = Math.floor(Math.random() * 100)
-    const cor = 'https://script.google.com/macros/s/AKfycbz2cNhBo6uGCS_a-k-h3oUHCQCspnHjToUuPEtuiL5uQt5yhIEwCY9kBTMoeG5EANw/exec?url=' //jeruk
+    //const cor = 'https://script.google.com/macros/s/AKfycbz2cNhBo6uGCS_a-k-h3oUHCQCspnHjToUuPEtuiL5uQt5yhIEwCY9kBTMoeG5EANw/exec?url=' //jeruk
+    const cor = 'https://geturl.deno.dev/?url=' //jeruk
     
     const sourcegempa = cor+'https://data.bmkg.go.id/DataMKG/TEWS/autogempa.xml?t='+random
     const sourceerupsi = cor+'https://magma.esdm.go.id/v1/gunung-api/informasi-letusan?t='+random
@@ -1406,8 +1407,8 @@ const handleBsmimobile = async (request, env) => {
       data.resultgempa.status = 'same'
   }
 
-  if((data.resulterupsi.laporan != bsmimobile.erupsi)&&(data.resulterupsi.laporan != undefined)){
-      bsmimobile.erupsi = data.resulterupsi.laporan
+  if((data.resulterupsi.gambar != bsmimobile.erupsi)&&(data.resulterupsi.laporan != undefined)){
+      bsmimobile.erupsi = (data.resulterupsi.gambar!= undefined)?data.resulterupsi.gambar:'undefined'
       data.resulterupsi.status = 'send'
       send = true
       let laporan = data.resulterupsi.laporan
