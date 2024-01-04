@@ -21,7 +21,7 @@ database_id = "8cf9edd1-1ac4-4075-918b-29445e49be59"
 TELEGRAM_CHATID_INFOPALESTINA = "@info_palestina"
 API_TOKEN_NUZULZ_HOOKRENDERUSER = "txtfromgaza"
 TELEGRAM_CHATID_INFODONORDARAH = "@info_donor_darah"
-TELEGRAM_CHATID_BSMIMOBILE = "@bsmi_tv"
+TELEGRAM_CHATID_BSMIMOBILE = "@info_bencana"
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/runtime-apis/kv

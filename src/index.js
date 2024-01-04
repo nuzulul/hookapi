@@ -1394,8 +1394,8 @@ const handleBsmimobile = async (request, env) => {
       data.resultgempa.telegram = response
       const channel = '948f8e4d-3b32-46f6-9b25-d732c72a3447'
       const headings = 'Gempa Bumi M '+data.resultgempa.magnitude
-      //const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
-      //data.resultgempa.onesignal = onesignal
+      const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
+      data.resultgempa.onesignal = onesignal
   }else{
       data.resultgempa.status = 'same'
   }
@@ -1411,8 +1411,8 @@ const handleBsmimobile = async (request, env) => {
       data.resulterupsi.telegram = response
       const channel = '50c71637-13a0-4cf2-a18d-d5f54f7d53a9'
       const headings = 'Erupsi G. '+data.resulterupsi.gunung
-      //const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
-      //data.resulterupsi.onesignal = onesignal
+      const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
+      data.resulterupsi.onesignal = onesignal
   }else{
       data.resulterupsi.status = 'same'
   }
@@ -1428,8 +1428,8 @@ const handleBsmimobile = async (request, env) => {
       const channel = '0a7ca4ad-9a3b-4f88-acf6-7dc1ef38941d'
       const headings = data.resulttsunami.subject
       const msgtxt = data.resulttsunami.headline
-      //const onesignal = await sendonesignalbsmimobile(channel,headings, msgtxt)
-      //data.resulttsunami.onesignal = onesignal
+      const onesignal = await sendonesignalbsmimobile(channel,headings, msgtxt)
+      data.resulttsunami.onesignal = onesignal
   }else{
       data.resulttsunami.status = 'same'
   }
