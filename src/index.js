@@ -255,6 +255,7 @@ async function sendonesignalbsmimobile(channel,headings, msg) {
       
       const apiUrl = `https://onesignal.com/api/v1/notifications`;
       const API_TOKEN_NUZULZ_ONESIGNALBSMIMOBILE = myenv.API_TOKEN_NUZULZ_ONESIGNALBSMIMOBILE
+      const ONESIGNAL_SEGMENTS_BSMIMOBILE = myenv.ONESIGNAL_SEGMENTS_BSMIMOBILE
       const params = {
             contents: {
               "en": msg,
@@ -267,7 +268,8 @@ async function sendonesignalbsmimobile(channel,headings, msg) {
             android_channel_id: channel,
             included_segments: [
                 //'All',
-                'Test Users'
+                //'Test Users'
+                ONESIGNAL_SEGMENTS_BSMIMOBILE
               ]
       };
 
@@ -1218,9 +1220,13 @@ const handleBsmimobile = async (request, env) => {
   });
   
   async function handleRequest(request) {
-    const sourcegempa = 'https://data.bmkg.go.id/DataMKG/TEWS/autogempa.xml'
-    const sourceerupsi = 'https://magma.esdm.go.id/v1/gunung-api/informasi-letusan'
-    const sourcetsunami = 'https://bmkg-content-inatews.storage.googleapis.com/last30tsunamievent.xml'
+  
+    const random = Math.floor(Math.random() * 100)
+    const cor = 'https://script.google.com/macros/s/AKfycbz2cNhBo6uGCS_a-k-h3oUHCQCspnHjToUuPEtuiL5uQt5yhIEwCY9kBTMoeG5EANw/exec?url=' //jeruk
+    
+    const sourcegempa = cor+'https://data.bmkg.go.id/DataMKG/TEWS/autogempa.xml?t='+random
+    const sourceerupsi = cor+'https://magma.esdm.go.id/v1/gunung-api/informasi-letusan?t='+random
+    const sourcetsunami = 'https://bmkg-content-inatews.storage.googleapis.com/last30tsunamievent.xml?t='+random
     
     const [datagempa,dataerupsi,datatsunami] = await Promise.all([
       fetch(sourcegempa),
@@ -1400,12 +1406,12 @@ const handleBsmimobile = async (request, env) => {
       data.resultgempa.status = 'same'
   }
 
-  if(data.resulterupsi.laporan != bsmimobile.erupsi){
+  if((data.resulterupsi.laporan != bsmimobile.erupsi)&&(data.resulterupsi.laporan != undefined)){
       bsmimobile.erupsi = data.resulterupsi.laporan
       data.resulterupsi.status = 'send'
       send = true
       let laporan = data.resulterupsi.laporan
-      laporan = laporan.replaceAll("&plusmn;","+-")
+      laporan = laporan.replace(/&plusmn;/g,"+-")
       const msg = laporan+' '+data.resulterupsi.gambar
       const response = await sendtelegram("BSMIMOBILE","text",msg,"")
       data.resulterupsi.telegram = response
@@ -1417,7 +1423,7 @@ const handleBsmimobile = async (request, env) => {
       data.resulterupsi.status = 'same'
   }
 
-  if(data.resulttsunami.eventid != bsmimobile.tsunami){
+  if((data.resulttsunami.eventid != bsmimobile.tsunami)&&(data.resulttsunami.eventid != undefined)){
       bsmimobile.tsunami = data.resulttsunami.eventid
       data.resulttsunami.status = 'send'
       send = true
