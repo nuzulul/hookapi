@@ -1408,7 +1408,7 @@ const handleBsmimobile = async (request, env) => {
   }
 
   if((data.resulterupsi.gambar != bsmimobile.erupsi)&&(data.resulterupsi.laporan != undefined)){
-      bsmimobile.erupsi = (data.resulterupsi.gambar!= undefined)?data.resulterupsi.gambar:'undefined'
+      bsmimobile.erupsi = data.resulterupsi.gambar
       data.resulterupsi.status = 'send'
       send = true
       let laporan = data.resulterupsi.laporan
