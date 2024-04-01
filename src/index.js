@@ -34,6 +34,7 @@ const handleGet = async (request, env, id) => {
       case "infopalestina2": return await handleInfopalestina2(request, env)
       case "infopalestina3": return await handleInfopalestina3(request, env)
       case "infopalestina4": return await handleInfopalestina4(request, env)
+	  case "infopalestina5": return await handleInfopalestina5(request, env)
       case "txtfromgaza": return await handleTxtfromgaza(request, env)
       case "infodonordarah": return await handleInfodonordarah(request, env)
       case "bsmimobile": return await handleBsmimobile(request, env)
@@ -903,6 +904,150 @@ const handleInfopalestina4 = async (request, env) => {
       }      
       output = JSON.stringify(data[i], null, 2)
       await env.DB.put("infopalestina4",data[i].id)
+      break
+    }
+  }
+  
+  //const res = json
+  const res = output
+  return new Response(res, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
+    }
+  });
+      
+}
+
+const handleInfopalestina5 = async (request, env) => {
+	
+  const dbname = "infopalestina5"
+  const url = "https://t.me/s/halopalestinacom"
+
+  addEventListener("fetch", event => {
+    event.respondWith(handleRequest(event.request))
+  });
+
+  async function handleRequest(request) {
+    var values = [];
+    var response = await fetch(url);
+    function addToLast(attr, text) {
+      var lastIndex = values.length - 1;
+      if (lastIndex < 0) {
+        // this shouldn't happen, since there should always have been
+        // an object created by the parent [data-code] div
+        return;
+      }
+      // need to add them to the previous value, just in case if there
+      // are multiple text chunks
+      values[lastIndex][attr] = (values[lastIndex][attr] || '') + text;
+    }
+    await new HTMLRewriter()
+      .on(".tgme_widget_message_wrap", { 
+        element(element) { 
+          values.push({
+            container: element.getAttribute("class")
+          });
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message", {
+        element(element) {
+          addToLast('code', element.getAttribute("data-post"));
+          const code = element.getAttribute("data-post")
+          const arr = code.split("/")
+          const id = arr[1]
+          addToLast('id',id)
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_text", {
+        text(text) {
+          addToLast('title', text.text);
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_photo_wrap", {
+        element(element) {
+
+          const regex = /background-image:url\(["']?([^"']*)["']?\)/gm;
+          const str = element.getAttribute("style");
+          let m;
+
+          while ((m = regex.exec(str)) !== null) {
+              // This is necessary to avoid infinite loops with zero-width matches
+              if (m.index === regex.lastIndex) {
+                  regex.lastIndex++;
+              }
+              
+              // The result can be accessed through the `m`-variable.
+              m.forEach((match, groupIndex) => {
+                  //console.log(`Found match, group ${groupIndex}: ${match}`);
+                  if (groupIndex == 1) addToLast('photo', match);
+              });
+          }
+          
+          
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_video_player .tgme_widget_message_video_wrap video", {
+        element(element) {
+          addToLast('video', element.getAttribute("src"));
+        }
+      })
+      .transform(response).arrayBuffer();
+    
+    return values
+  }
+  
+  const data = await handleRequest(request)
+  const json = JSON.stringify(data, null, 2)
+  
+  const hookdb = await new Hookdb()
+  let lastcode
+  try{
+    console.log('db ok')
+    lastcode = await hookdb.get(dbname)
+    if(lastcode == null){
+      await hookdb.put(dbname,2)
+      lastcode = await hookdb.get(dbname)
+    }
+  } catch(e) {
+    console.log('db error')
+  }
+  console.log(lastcode)
+  
+  let output = '{"status":"ok"}'
+  let breakingimg = "https://nuzulul.github.io/uploads/breakingnews.jpg"
+  
+  for (let i = 0; i < data.length;i++) {
+    //console.log(data[i])
+    if (data[i].id > parseInt(lastcode)) {
+    //if (data[i].id == 49077) {
+      
+      let title = data[i].title || ""
+      title = title.split("Sumber:")
+	  title = title[0]
+	  data[i].newtitle = title
+
+      if(data[i].photo) {
+        
+
+          const response = await sendtelegram("INFOPALESTINA","photo",title,data[i].photo)
+          data[i].response = response
+
+      }
+      else if(data[i].video) {
+		
+		  
+        const response = await sendtelegram("INFOPALESTINA","video",title,data[i].video)
+        data[i].response = response
+      }
+      else {
+        
+
+          const response = await sendtelegram("INFOPALESTINA","photo",title,breakingimg)
+          data[i].response = response
+      }      
+      output = JSON.stringify(data[i], null, 2)
+	  await hookdb.put(dbname,data[i].id)
       break
     }
   }
