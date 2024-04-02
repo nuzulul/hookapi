@@ -52,7 +52,7 @@ async function sendtelegram(code,format,caption,src) {
   
   const TELEGRAM_BOT_TOKEN = myenv.API_TOKEN_TELEGRAM_NUZULUL_INFOBSMIBOT
   let chatId = ""
-  if(code=='INFOPALESTINA'){chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA;caption = caption+"\n\n"+"Simak terus Info Palestina terkini di Telegram https://t.me/info_palestina";}
+  if(code=='INFOPALESTINA'){chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA;caption = caption+"\n\n"+"Simak terus Info Palestina terkini di channel https://t.me/info_palestina ";}
   if(code=='INFODONORDARAH')chatId = myenv.TELEGRAM_CHATID_INFODONORDARAH
   if(code=='BSMIMOBILE')chatId = myenv.TELEGRAM_CHATID_BSMIMOBILE
   //const chatId = "@bsmi_tv"
@@ -1370,6 +1370,13 @@ const handleInfopalestina7 = async (request, env) => {
     
     return values
   }
+
+	function isRTL(s){           
+		var rtlChars        = '\u0591-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC',
+			rtlDirCheck     = new RegExp('^[^'+rtlChars+']*?['+rtlChars+']');
+
+		return rtlDirCheck.test(s);
+	}
   
   const data = await handleRequest(request)
   const json = JSON.stringify(data, null, 2)
@@ -1394,10 +1401,15 @@ const handleInfopalestina7 = async (request, env) => {
   for (let i = 0; i < data.length;i++) {
     
     if (data[i].id > parseInt(lastcode)) {
-	//if (data[i].id == 10378) {
+	//if (data[i].id == 10369) {
       
       let title = data[i].title || ""
 	  title = decodeEntities(title)
+	  if(isRTL(title)){
+		  title = title.split(".")
+		  title.pop()
+		  title = title.toString()
+	  }
 	  title = await translatetext("en","id",title)
 	  data[i].translate = title
 
