@@ -50,7 +50,7 @@ async function sendtelegram(code,format,caption,src) {
   
   const TELEGRAM_BOT_TOKEN = myenv.API_TOKEN_TELEGRAM_NUZULUL_INFOBSMIBOT
   let chatId = ""
-  if(code=='INFOPALESTINA'){chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA;caption = caption+"\n\n"+"Simak terus Info Palestina terkini di Telegram https://t.me/freepalestineid";}
+  if(code=='INFOPALESTINA'){chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA;caption = caption+"\n\n"+"Simak terus Info Palestina terkini di Telegram https://t.me/info_palestina";}
   if(code=='INFODONORDARAH')chatId = myenv.TELEGRAM_CHATID_INFODONORDARAH
   if(code=='BSMIMOBILE')chatId = myenv.TELEGRAM_CHATID_BSMIMOBILE
   //const chatId = "@bsmi_tv"
@@ -1340,7 +1340,7 @@ const handleInfodonordarah = async (request, env) => {
                     "8. Narahubung "+data[i].narahubung+"\n"+
                     "9. HP "+data[i].kontak+"\n"+
                     "10. Keterangan : -\n\n"+
-                    "Diharap dapat membantu menyebarluaskan informasi ini. Permintaan donor darah https://forms.gle/3LoD4MnAVCF9NMUb7 . Demikian atas perhatiannya disampaikan banyak terima kasih."
+                    "Diharap dapat membantu menyebarluaskan informasi simak terus di telegram https://t.me/info_donor_darah . Permintaan donor darah https://forms.gle/3LoD4MnAVCF9NMUb7 . Demikian atas perhatiannya disampaikan banyak terima kasih."
           const response = await sendtelegram("INFODONORDARAH","text",msg,"")
           data[i].response = response
           output = JSON.stringify(data[i], null, 2)
