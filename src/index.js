@@ -37,6 +37,7 @@ const handleGet = async (request, env, id) => {
 	  case "infopalestina5": return await handleInfopalestina5(request, env)
 	  case "infopalestina6": return await handleInfopalestina6(request, env)
 	  case "infopalestina7": return await handleInfopalestina7(request, env)
+	  case "infopalestina8": return await handleInfopalestina8(request, env)
       case "txtfromgaza": return await handleTxtfromgaza(request, env)
       case "infodonordarah": return await handleInfodonordarah(request, env)
       case "bsmimobile": return await handleBsmimobile(request, env)
@@ -1411,6 +1412,190 @@ const handleInfopalestina7 = async (request, env) => {
 		  title = title.toString()
 	  }
 	  title = await translatetext("en","id",title)
+	  data[i].translate = title
+
+      if(data[i].photo) {
+        
+
+          const response = await sendtelegram("INFOPALESTINA","photo",title,data[i].photo)
+          data[i].response = response
+
+      }
+      else if(data[i].video) {
+		
+		  
+        const response = await sendtelegram("INFOPALESTINA","video",title,data[i].video)
+        data[i].response = response
+      }
+      else if(data[i].thumbnail) {
+        
+
+          const response = await sendtelegram("INFOPALESTINA","photo",title,data[i].thumbnail)
+          data[i].response = response
+
+      }
+      else {
+        
+
+          const response = await sendtelegram("INFOPALESTINA","photo",title,breakingimg)
+          data[i].response = response
+		  
+      }      
+      output = JSON.stringify(data[i], null, 2)
+	  await hookdb.put(dbname,data[i].id)
+      break
+    }
+  }
+  
+  //const res = json
+  const res = output
+  return new Response(res, {
+    headers: {
+      "content-type": "application/json;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
+    }
+  });
+      
+}
+
+const handleInfopalestina8 = async (request, env) => {
+	
+  const dbname = "infopalestina8"
+  const url = "https://t.me/s/PalestineTv1"
+
+  addEventListener("fetch", event => {
+    event.respondWith(handleRequest(event.request))
+  });
+
+  async function handleRequest(request) {
+    var values = [];
+    var response = await fetch(url);
+    function addToLast(attr, text) {
+      var lastIndex = values.length - 1;
+      if (lastIndex < 0) {
+        // this shouldn't happen, since there should always have been
+        // an object created by the parent [data-code] div
+        return;
+      }
+      // need to add them to the previous value, just in case if there
+      // are multiple text chunks
+      values[lastIndex][attr] = (values[lastIndex][attr] || '') + text;
+    }
+    await new HTMLRewriter()
+      .on(".tgme_widget_message_wrap", { 
+        element(element) { 
+          values.push({
+            container: element.getAttribute("class")
+          });
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message", {
+        element(element) {
+          addToLast('code', element.getAttribute("data-post"));
+          const code = element.getAttribute("data-post")
+          const arr = code.split("/")
+          const id = arr[1]
+          addToLast('id',id)
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_text", {
+        text(text) {
+          addToLast('title', text.text);
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_photo_wrap", {
+        element(element) {
+
+          const regex = /background-image:url\(["']?([^"']*)["']?\)/gm;
+          const str = element.getAttribute("style");
+          let m;
+
+          while ((m = regex.exec(str)) !== null) {
+              // This is necessary to avoid infinite loops with zero-width matches
+              if (m.index === regex.lastIndex) {
+                  regex.lastIndex++;
+              }
+              
+              // The result can be accessed through the `m`-variable.
+              m.forEach((match, groupIndex) => {
+                  //console.log(`Found match, group ${groupIndex}: ${match}`);
+                  if (groupIndex == 1) addToLast('photo', match);
+              });
+          }
+          
+          
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_video_player .tgme_widget_message_video_wrap video", {
+        element(element) {
+          addToLast('video', element.getAttribute("src"));
+        }
+      })
+      .on(".tgme_widget_message_wrap .tgme_widget_message .tgme_widget_message_bubble .tgme_widget_message_video_player .tgme_widget_message_video_thumb", {
+        element(element) {
+
+          const regex = /background-image:url\(["']?([^"']*)["']?\)/gm;
+          const str = element.getAttribute("style");
+          let m;
+
+          while ((m = regex.exec(str)) !== null) {
+              // This is necessary to avoid infinite loops with zero-width matches
+              if (m.index === regex.lastIndex) {
+                  regex.lastIndex++;
+              }
+              
+              // The result can be accessed through the `m`-variable.
+              m.forEach((match, groupIndex) => {
+                  //console.log(`Found match, group ${groupIndex}: ${match}`);
+                  if (groupIndex == 1) addToLast('thumbnail', match);
+              });
+          }
+          
+          
+        }
+      })
+      .transform(response).arrayBuffer();
+    
+    return values
+  }
+
+	function isRTL(s){           
+		var rtlChars        = '\u0591-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC',
+			rtlDirCheck     = new RegExp('^[^'+rtlChars+']*?['+rtlChars+']');
+
+		return rtlDirCheck.test(s);
+	}
+  
+  const data = await handleRequest(request)
+  const json = JSON.stringify(data, null, 2)
+  
+  const hookdb = await new Hookdb()
+  let lastcode
+  try{
+    console.log('db ok')
+    lastcode = await hookdb.get(dbname)
+    if(lastcode == null){
+      await hookdb.put(dbname,2)
+      lastcode = await hookdb.get(dbname)
+    }
+  } catch(e) {
+    console.log('db error')
+  }
+  console.log(lastcode)
+  
+  let output = '{"status":"ok"}'
+  let breakingimg = "https://nuzulul.github.io/uploads/breakingnews.jpg"
+  
+  for (let i = 0; i < data.length;i++) {
+    
+    if (data[i].id > parseInt(lastcode)) {
+	//if (data[i].id == 10369) {
+      
+      let title = data[i].title || ""
+	  title = decodeEntities(title)
+	  if (title.includes("https://"))continue
+	  title = title.replace("#","")
+	  title = await translatetext("ar","id",title)
 	  data[i].translate = title
 
       if(data[i].photo) {
