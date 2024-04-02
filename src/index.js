@@ -50,7 +50,7 @@ async function sendtelegram(code,format,caption,src) {
   
   const TELEGRAM_BOT_TOKEN = myenv.API_TOKEN_TELEGRAM_NUZULUL_INFOBSMIBOT
   let chatId = ""
-  if(code=='INFOPALESTINA'){chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA;caption = caption+"\n\n"+"Simak terus Info Palestina terkini di Telegram https://t.me/info_palestina";}
+  if(code=='INFOPALESTINA'){chatId = myenv.TELEGRAM_CHATID_INFOPALESTINA;caption = caption+"\n\n"+"Simak terus Info Palestina terkini di Telegram https://t.me/freepalestineid";}
   if(code=='INFODONORDARAH')chatId = myenv.TELEGRAM_CHATID_INFODONORDARAH
   if(code=='BSMIMOBILE')chatId = myenv.TELEGRAM_CHATID_BSMIMOBILE
   //const chatId = "@bsmi_tv"
