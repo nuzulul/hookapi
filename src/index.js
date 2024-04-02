@@ -1024,6 +1024,7 @@ const handleInfopalestina5 = async (request, env) => {
     //if (data[i].id == 49077) {
       
       let title = data[i].title || ""
+	  title = decodeEntities(title)
       title = title.split("Sumber:")
 	  title = title[0]
 	  data[i].newtitle = title
@@ -1163,11 +1164,12 @@ const handleInfopalestina6 = async (request, env) => {
   let breakingimg = "https://nuzulul.github.io/uploads/breakingnews.jpg"
   
   for (let i = 0; i < data.length;i++) {
-    //console.log(data[i])
+    
     if (data[i].id > parseInt(lastcode)) {
-    //if (data[i].id == 49077) {
+    
       
       let title = data[i].title || ""
+	  title = decodeEntities(title)
 
       if(data[i].photo) {
         
