@@ -2138,12 +2138,12 @@ const handleBsmimobile = async (request, env) => {
       let laporan = data.resulterupsi.laporan
       laporan = laporan.replace(/&plusmn;/g,"+-")
       const msg = laporan+' '+data.resulterupsi.gambar
-      const response = await sendtelegram("BSMIMOBILE","text",msg,"")
-      data.resulterupsi.telegram = response
+      //const response = await sendtelegram("BSMIMOBILE","text",msg,"")
+      //data.resulterupsi.telegram = response
       const channel = '50c71637-13a0-4cf2-a18d-d5f54f7d53a9'
       const headings = 'Erupsi G. '+data.resulterupsi.gunung
-      const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
-      data.resulterupsi.onesignal = onesignal
+      //const onesignal = await sendonesignalbsmimobile(channel,headings, msg)
+      //data.resulterupsi.onesignal = onesignal
   }else{
       data.resulterupsi.status = 'same'
   }
