@@ -41,6 +41,7 @@ const handleGet = async (request, env, id) => {
       case "txtfromgaza": return await handleTxtfromgaza(request, env)
       case "infodonordarah": return await handleInfodonordarah(request, env)
       case "bsmimobile": return await handleBsmimobile(request, env)
+	  case "bsmipusat": return await handleBsmipusat(request, env)
       default: return await handleDefault(request, env)
     }
   }
@@ -2176,4 +2177,96 @@ const handleBsmimobile = async (request, env) => {
       //"content-type": "text/html;charset=UTF-8"
     }
   });  
+}
+
+
+const handleBsmipusat = async (request, env) => {
+
+  addEventListener("fetch", event => {
+    event.respondWith(handleRequest(event.request))
+  });
+
+  async function handleRequest(request) {
+    var values = [];
+    const url = "https://bsmi.or.id"
+    var response = await fetch(url);
+    function addToLast(attr, text) {
+      var lastIndex = values.length - 1;
+      if (lastIndex < 0) {
+        // this shouldn't happen, since there should always have been
+        // an object created by the parent [data-code] div
+        return;
+      }
+      // need to add them to the previous value, just in case if there
+      // are multiple text chunks
+      values[lastIndex][attr] = (values[lastIndex][attr] || '') + text;
+    }
+    await new HTMLRewriter()
+      .on("#news-owl-carousel > div.item > div.card", { 
+        element(element) { 
+          values.push({
+            container: element.getAttribute("class")
+          });
+        }
+      })
+      .on("#news-owl-carousel > div.item > div.card > div.card-body > p", {
+        text(text) {
+          addToLast('title', text.text);
+        }
+      })
+      .on("#news-owl-carousel > div.item > div.card > div.card-header > .fright", {
+        text(text) {
+          addToLast('date', text.text);
+        }
+      })
+      .on("#news-owl-carousel > div.item > div.card > div.card-body > a", { 
+        element(element) { 
+          addToLast('url', element.getAttribute("href"));
+        }
+      })
+
+      .transform(response).arrayBuffer();
+    
+    return values
+  }
+  
+  const data = await handleRequest(request)
+  
+	let rss = 	'<?xml version="1.0" encoding="UTF-8" ?>\n'+
+					'<rss version="2.0">\n'+
+					'	<channel>\n'+
+					'		<title>BSMI NASIONAL</title>\n'+
+					'		<link>https://bsmi.or.id</link>\n'+
+					'		<description>BSMI</description>\n'
+
+	for(const obj of data){
+		
+		let title = obj.title.replace(/&[^>]*;/g,"")
+		
+		let description = '<![CDATA[ '+title+' ]]>'
+		
+		let item =	'		<item>\n'+
+					'			<title>'+title+'</title>\n'+
+					'			<link>'+obj.url+'</link>\n'+
+					'			<description>'+title+'</description>\n'+
+					'			<pubDate>'+obj.date+'</pubDate>\n'+
+					'			</item>\n'
+		rss += item
+	}
+
+  
+	rss +=			'	</channel>\n'+
+					'</rss>'
+
+  let output = '{"status":"ok"}'
+  output = JSON.stringify(data, null, 2)
+  
+  const res = rss
+  return new Response(res, {
+    headers: {
+      "content-type": "application/xml;charset=UTF-8"
+      //"content-type": "text/html;charset=UTF-8"
+    }
+  });
+      
 }
