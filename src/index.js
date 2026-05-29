@@ -2149,7 +2149,7 @@ const handleBsmimobile = async (request, env) => {
       data.resulterupsi.status = 'same'
   }
 
-  if((data.resulttsunami.eventid != bsmimobile.tsunami)&&(data.resulttsunami.eventid != undefined)){
+  if((data.resulttsunami.eventid != bsmimobile.tsunami)&&(data.resulttsunami.eventid != undefined)&&(data.resulttsunami.subject.includes('Warning Tsunami'))){
       bsmimobile.tsunami = data.resulttsunami.eventid
       data.resulttsunami.status = 'send'
       send = true
