@@ -2188,7 +2188,7 @@ const handleBsmipusat = async (request, env) => {
 
   async function handleRequest(request) {
     var values = [];
-    const url = "https://bsmi.or.id"
+    const url = "https://bsmi.or.id/blog"
     var response = await fetch(url);
     function addToLast(attr, text) {
       var lastIndex = values.length - 1;
@@ -2202,26 +2202,26 @@ const handleBsmipusat = async (request, env) => {
       values[lastIndex][attr] = (values[lastIndex][attr] || '') + text;
     }
     await new HTMLRewriter()
-      .on("#news-owl-carousel > div.item > div.card", { 
+      .on("article > div > h2 > a", { 
         element(element) { 
           values.push({
-            container: element.getAttribute("class")
+            container: element.getAttribute("href")
           });
         }
       })
-      .on("#news-owl-carousel > div.item > div.card > div.card-body > p", {
+      .on("article > div > h2 > a", {
         text(text) {
           addToLast('title', text.text);
         }
       })
-      .on("#news-owl-carousel > div.item > div.card > div.card-header > .fright", {
+      .on("article > div > div > span", {
         text(text) {
           addToLast('date', text.text);
         }
       })
-      .on("#news-owl-carousel > div.item > div.card > div.card-body > a", { 
+      .on("article > div > h2 > a", { 
         element(element) { 
-          addToLast('url', element.getAttribute("href"));
+          addToLast('url', 'https://bsmi.or.id'+element.getAttribute("href"));
         }
       })
 
