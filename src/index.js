@@ -18,12 +18,42 @@ export default {
 
 async function handleRequest(request, env, ctx) {
     const { method, url } = request
-    const { searchParams } = new URL(url)
+    const { searchParams, pathname } = new URL(url)
     const id = searchParams.get('id')
     myenv = env
-    switch(method) {
-        case "GET": return await handleGet(request, env, id)
+
+    // Route : Home page
+    if (pathname === '/' && method === 'GET' && !id) {
+      return new Response('Welcome to the homepage!', {
+        headers: { 'Content-Type': 'text/plain' },
+      });
     }
+	
+	// Route : JSON API Endpoint
+    if (pathname === '/api/data' && method === 'GET') {
+      const data = { message: 'Hello from native Cloudflare Workers!' };
+      return new Response(JSON.stringify(data), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }	
+	
+    // Route : Dynamic Parameters
+    if (pathname.startsWith('/api/users/') && method === 'GET') {
+      const userId = pathname.split('/').pop();
+      return new Response(JSON.stringify({ userId }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }	
+	
+	if (pathname === '/') {
+		switch(method) {
+			case "GET": return await handleGet(request, env, id)
+		}
+	}
+	
+    // 404 Not Found for everything else
+    return new Response('404 Not Found', { status: 404 });
+
 }
 
 const handleGet = async (request, env, id) => {
@@ -48,6 +78,10 @@ const handleGet = async (request, env, id) => {
   else {
     return new Response("ok");
   }
+}
+
+const handleDefault = async (request, env) => {
+  return new Response("ok");
 }
 
 async function sendtelegram(code,format,caption,src) {
@@ -358,9 +392,7 @@ class Hookdb {
   }
 }
 
-const handleDefault = async (request, env) => {
-  return new Response("ok");
-}
+
 
 const handleTesting = async (request, env) => {
 
@@ -2114,7 +2146,7 @@ const handleBsmimobile = async (request, env) => {
   
   let send = false
   
-  if((data.resultgempa.datetime != bsmimobile.gempa)&&(data.resultgempa.datetime != undefined)){
+  if((data.resultgempa.datetime != bsmimobile.gempa)&&(data.resultgempa.datetime != undefined)&&(data.resultgempa.datetime.includes('T'))){
       bsmimobile.gempa = data.resultgempa.datetime
       data.resultgempa.status = 'send'
       send = true
